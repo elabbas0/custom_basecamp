@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-people" style="color:#6366f1;"></i> All Users</h2>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th class="px-4 py-3">Name</th>
+          <th class="py-3">Email</th>
+          <th class="py-3">Role</th>
+          <th class="py-3">Joined</th>
+          <% if (locals.currentUser && currentUser.role === 'admin') { %>
+            <th class="py-3">Actions</th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr>
+            <td class="px-4 py-3">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:36px;height:36px;border-radius:50%;background:#31c48d;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                  <%= u.name.charAt(0).toUpperCase() %>
+                </div>
+                <a href="/users/<%= u.id %>" class="fw-semibold text-decoration-none text-dark"><%= u.name %></a>
+                <% if (u.id === currentUser.id) { %>
+                  <span class="badge bg-light text-muted" style="font-size:0.65rem;">you</span>
+                <% } %>
+              </div>
+            </td>
+            <td class="py-3 text-muted"><%= u.email %></td>
+            <td class="py-3">
+              <% if (u.role === 'admin') { %>
+                <span class="badge" style="background:#f59e0b;color:#fff;">Admin</span>
+              <% } else { %>
+                <span class="badge bg-secondary">User</span>
+              <% } %>
+            </td>
+            <td class="py-3 text-muted"><%= new Date(u.createdAt).toLocaleDateString() %></td>
+
+            <% if (locals.currentUser && currentUser.role === 'admin') { %>
+              <td class="py-3">
+                <% if (u.role !== 'admin') { %>
+                  <form method="POST" action="/users/<%= u.id %>/admin" class="d-inline"
+                    onsubmit="return confirm('Make <%= u.name %> an admin?')">
+                    <button class="btn btn-sm btn-warning"><i class="bi bi-shield-plus"></i> Make Admin</button>
+                  </form>
+                <% } else if (u.id !== currentUser.id) { %>
+                  <form method="POST" action="/users/<%= u.id %>/remove-admin" class="d-inline"
+                    onsubmit="return confirm('Remove admin from <%= u.name %>?')">
+                    <button class="btn btn-sm btn-outline-warning"><i class="bi bi-shield-minus"></i> Remove Admin</button>
+                  </form>
+                <% } else { %>
+                  <span class="text-muted" style="font-size:0.8rem;">You (admin)</span>
+                <% } %>
+              </td>
+            <% } %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

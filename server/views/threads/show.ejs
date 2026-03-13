@@ -1,0 +1,112 @@
+<%- include('../partials/header') %>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+
+    <%# Thread header %>
+    <div class="card p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <a href="/projects/<%= project.id %>" class="text-muted text-decoration-none small">
+            <i class="bi bi-arrow-left"></i> <%= project.name %>
+          </a>
+          <h3 class="fw-bold mt-1 mb-0"><%= thread.title %></h3>
+          <small class="text-muted">Started by <%= thread.User.name %></small>
+        </div>
+        <% if (locals.currentUser && (currentUser.id === project.owner || currentUser.role === 'admin')) { %>
+          <div class="d-flex gap-2">
+            <a href="/projects/<%= project.id %>/threads/<%= thread.id %>/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            <form method="POST" action="/projects/<%= project.id %>/threads/<%= thread.id %>/delete" onsubmit="return confirm('Delete this thread and all messages?')">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <%# Messages list — new messages get appended here by WebSocket %>
+    <div id="messages-list">
+      <% if (thread.Messages.length === 0) { %>
+        <p class="text-muted" id="empty-notice">No messages yet. Be the first to post!</p>
+      <% } %>
+      <% thread.Messages.forEach(msg => { %>
+        <div class="card p-3 mb-3" id="msg-<%= msg.id %>">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <span class="fw-semibold"><i class="bi bi-person-circle me-1"></i><%= msg.User.name %></span>
+              <small class="text-muted ms-2"><%= new Date(msg.createdAt).toLocaleString() %></small>
+              <p class="mt-2 mb-0"><%= msg.body %></p>
+            </div>
+            <% if (locals.currentUser && msg.userId === currentUser.id) { %>
+              <div class="d-flex gap-2 ms-3">
+                <a href="/projects/<%= project.id %>/threads/<%= thread.id %>/messages/<%= msg.id %>/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="/projects/<%= project.id %>/threads/<%= thread.id %>/messages/<%= msg.id %>/delete" onsubmit="return confirm('Delete this message?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <%# Post a message %>
+    <% if (locals.currentUser && (project.members.includes(currentUser.id) || currentUser.id === project.owner || currentUser.role === 'admin')) { %>
+      <div class="card p-4 mt-2">
+        <h6 class="fw-bold mb-3">Post a message</h6>
+        <form id="message-form" method="POST" action="/projects/<%= project.id %>/threads/<%= thread.id %>/messages">
+          <div class="mb-3">
+            <textarea id="message-body" name="body" class="form-control" rows="3" placeholder="Write something..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-bc"><i class="bi bi-send"></i> Post</button>
+        </form>
+      </div>
+    <% } %>
+
+  </div>
+</div>
+
+<script>
+  const currentUserId = '<%= locals.currentUser ? currentUser.id : "" %>';
+  const threadId = '<%= thread.id %>';
+  const projectId = '<%= project.id %>';
+
+  // __ws is opened in header.ejs for all logged-in users
+  // Here we just listen for messages belonging to this thread
+  __ws.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type !== 'new_message') return;
+    if (data.threadId !== threadId) return;
+
+    const empty = document.getElementById('empty-notice');
+    if (empty) empty.remove();
+
+    const list = document.getElementById('messages-list');
+    const card = document.createElement('div');
+    card.className = 'card p-3 mb-3';
+    card.id = 'msg-' + data.id;
+
+    const actions = data.userId === currentUserId ? `
+      <div class="d-flex gap-2 ms-3">
+        <a href="/projects/${projectId}/threads/${threadId}/messages/${data.id}/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+        <form method="POST" action="/projects/${projectId}/threads/${threadId}/messages/${data.id}/delete" onsubmit="return confirm('Delete this message?')">
+          <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="fw-semibold"><i class="bi bi-person-circle me-1"></i>${data.userName}</span>
+          <small class="text-muted ms-2">${new Date(data.createdAt).toLocaleString()}</small>
+          <p class="mt-2 mb-0">${data.body}</p>
+        </div>
+        ${actions}
+      </div>`;
+
+    list.appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+
+<%- include('../partials/footer') %>

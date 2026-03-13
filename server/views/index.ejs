@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<% if (!locals.currentUser) { %>
+  <!-- Hero -->
+  <div class="row align-items-center py-5">
+    <div class="col-lg-6">
+      <h1 class="display-4 fw-bold">Work together, <span style="color:#31c48d;">get things done.</span></h1>
+      <p class="lead text-muted mt-3">MyBasecamp brings your team, tools, and discussions together. Stay organized, stay on track.</p>
+      <div class="mt-4 d-flex gap-3">
+        <a href="/users/new" class="btn btn-bc btn-lg px-4">Get Started Free</a>
+        <a href="/session/login" class="btn btn-outline-secondary btn-lg px-4">Log In</a>
+      </div>
+    </div>
+    <div class="col-lg-6 text-center mt-5 mt-lg-0">
+      <i class="bi bi-kanban" style="font-size: 9rem; color: #31c48d; opacity: 0.15;"></i>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="row g-4 mt-2">
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <i class="bi bi-folder2-open display-5" style="color:#31c48d;"></i>
+        <h5 class="mt-3">Projects</h5>
+        <p class="text-muted">Organize your work into projects. Create, manage and share with your team.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <i class="bi bi-people display-5" style="color:#6366f1;"></i>
+        <h5 class="mt-3">Team Roles</h5>
+        <p class="text-muted">Assign admins and manage permissions across your organization.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-4 h-100 text-center">
+        <i class="bi bi-shield-check display-5" style="color:#f59e0b;"></i>
+        <h5 class="mt-3">Secure Sessions</h5>
+        <p class="text-muted">Authenticated login and session management keeps your data safe.</p>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <!-- Dashboard -->
+  <h2 class="fw-bold">Welcome back, <%= currentUser.name %> 👋</h2>
+  <p class="text-muted">Here's your dashboard.</p>
+  <div class="row g-3 mt-2">
+    <div class="col-md-4">
+      <a href="/projects" class="card p-4 text-decoration-none text-dark project-card d-block">
+        <i class="bi bi-folder2-open fs-2" style="color:#31c48d;"></i>
+        <h5 class="mt-2">My Projects</h5>
+        <p class="text-muted mb-0">View and manage all your projects</p>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/projects/new" class="card p-4 text-decoration-none text-dark project-card d-block">
+        <i class="bi bi-plus-circle fs-2" style="color:#6366f1;"></i>
+        <h5 class="mt-2">New Project</h5>
+        <p class="text-muted mb-0">Start something new</p>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/users/<%= currentUser.id %>" class="card p-4 text-decoration-none text-dark project-card d-block">
+        <i class="bi bi-person-circle fs-2" style="color:#f59e0b;"></i>
+        <h5 class="mt-2">My Profile</h5>
+        <p class="text-muted mb-0">View and update your account</p>
+      </a>
+    </div>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

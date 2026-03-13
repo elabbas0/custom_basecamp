@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card p-4 mt-3">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="width:64px;height:64px;border-radius:50%;background:#31c48d;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;font-weight:700;">
+          <%= user.name.charAt(0).toUpperCase() %>
+        </div>
+        <div>
+          <h3 class="mb-0 fw-bold"><%= user.name %></h3>
+          <p class="text-muted mb-1"><%= user.email %></p>
+          <% if (user.role === 'admin') { %>
+            <span class="badge" style="background:#f59e0b;color:#fff;">Admin</span>
+          <% } else { %>
+            <span class="badge bg-secondary">User</span>
+          <% } %>
+        </div>
+      </div>
+
+      <hr>
+
+      <%
+        const isAdmin = locals.currentUser && currentUser.role === 'admin';
+        const isOwnProfile = locals.currentUser && currentUser.id === user.id;
+        const canDemote = isAdmin && !isOwnProfile && user.role === 'admin';
+        const canPromote = isAdmin && user.role !== 'admin';
+      %>
+
+      <% if (isAdmin) { %>
+        <div class="mb-3">
+          <h6 class="text-muted text-uppercase mb-2" style="font-size:0.75rem; letter-spacing:1px;">
+            <i class="bi bi-shield"></i> Role Management
+          </h6>
+          <% if (canPromote) { %>
+            <form method="POST" action="/users/<%= user.id %>/admin" class="d-inline"
+              onsubmit="return confirm('Make <%= user.name %> an admin?')">
+              <button class="btn btn-sm btn-warning"><i class="bi bi-shield-plus"></i> Make Admin</button>
+            </form>
+          <% } else if (canDemote) { %>
+            <form method="POST" action="/users/<%= user.id %>/remove-admin" class="d-inline"
+              onsubmit="return confirm('Remove admin role from <%= user.name %>?')">
+              <button class="btn btn-sm btn-outline-warning"><i class="bi bi-shield-minus"></i> Remove Admin</button>
+            </form>
+          <% } else if (isOwnProfile && user.role === 'admin') { %>
+            <p class="text-muted mb-0" style="font-size:0.85rem;"><i class="bi bi-info-circle"></i> You cannot remove your own admin role.</p>
+          <% } %>
+        </div>
+      <% } %>
+
+      <% if (isOwnProfile) { %>
+        <div class="mt-2">
+          <h6 class="text-muted text-uppercase mb-2" style="font-size:0.75rem; letter-spacing:1px;">
+            <i class="bi bi-person"></i> Account
+          </h6>
+          <form method="POST" action="/users/<%= user.id %>/delete"
+            onsubmit="return confirm('Delete your account permanently?')">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete My Account</button>
+          </form>
+        </div>
+      <% } %>
+
+      <div class="mt-4 d-flex gap-2">
+        <a href="/projects" class="btn btn-bc"><i class="bi bi-folder2-open"></i> Projects</a>
+        <% if (isAdmin) { %>
+          <a href="/users" class="btn btn-outline-secondary"><i class="bi bi-people"></i> All Users</a>
+        <% } %>
+        <a href="/" class="btn btn-outline-secondary">Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
